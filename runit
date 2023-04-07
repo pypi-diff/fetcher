@@ -2,7 +2,7 @@
 set -e
 source ../token
 
-AUTHOR="pypi diffbot <foo@bar.com>"
+AUTHOR="pypi diffbot <diff@bot.auto>"
 TODAY=$(date +'%Y%m%d')
 NOW=$(date +'%Y%m%d%H%M')
 
