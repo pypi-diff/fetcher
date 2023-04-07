@@ -2,7 +2,6 @@
 set -e
 source ../pypidiff/token
 export GIT_SSH_COMMAND="ssh -i ../pypidiff/diffbot.key"
-AUTHOR="pypidiff <fbonly@schiach.de>"
 
 TODAY=$(date +'%Y%m%d')
 NOW=$(date +'%Y%m%d%H%M')
@@ -28,8 +27,10 @@ python3 fetch.py --serial $TODAY/serial --output $TODAY --logfile $TODAY/fetcher
 # do not try to hit any limits ..
 find $TODAY  -type f ! -name "*.gz" -and -size +50M -exec gzip {} \;
 PARM="--git-dir $TODAY/.git --work-tree $TODAY"
+git $PARM config user.name "pypidiff"
+git $PARM config user.email "fbonly@schiach.de"
 git $PARM add .
-git $PARM commit -m "changes: $NOW" -a --author "$AUTHOR"
+git $PARM commit -m "changes: $NOW" -a
 git $PARM push
 git $PARM tag -a "v$NOW" -m "$NOW"
 git $PARM push origin "v$NOW"
