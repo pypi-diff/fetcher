@@ -6,11 +6,17 @@ AUTHOR="pypi diffbot <foo@bar.com>"
 TODAY=$(date +'%Y%m%d')
 NOW=$(date +'%Y%m%d%H%M')
 
-if ! gh repo list pypi-diff | grep $TODAY > /dev/null; then
+LIST=$(mktemp)
+gh repo list pypi-diff > $LIST
+
+if ! grep $TODAY $LIST > /dev/null; then
     echo "Create new repo $TODAY"
     gh repo create pypi-diff/$TODAY --public -p  pypi-diff/template
-    sleep 2
+    # cloning from template takes some time
+    sleep 20
 fi
+
+rm -f $LIST
 
 if [ ! -e $TODAY ]; then
     git clone ssh://git@github.com/pypi-diff/$TODAY
