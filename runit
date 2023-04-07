@@ -1,13 +1,14 @@
  #!/bin/bash
 set -e
+gh auth login --with-token < ../token
+
 AUTHOR="pypi diffbot <foo@bar.com>"
 TODAY=$(date +'%Y%m%d')
 NOW=$(date +'%Y%m%d%H%M')
 
-# do not try to hit any limits ..
 if ! gh repo list pypi-diff | grep $TODAY > /dev/null; then
     echo "Create new repo $TODAY"
-    gh repo create pypi-diff/$TODAY --public
+    gh repo create pypi-diff/$TODAY --public -p  pypi-diff/template
     sleep 2
 fi
 
@@ -16,6 +17,7 @@ if [ ! -e $TODAY ]; then
 fi
 
 python3 fetch.py --serial $TODAY/serial --output $TODAY --logfile $TODAY/fetcher.log
+
 # do not try to hit any limits ..
 find $TODAY  -type f ! -name "*.gz" -and -size +50M -exec gzip {} \;
 PARM="--git-dir $TODAY/.git --work-tree $TODAY"
