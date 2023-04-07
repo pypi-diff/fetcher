@@ -1,8 +1,9 @@
  #!/bin/bash
 set -e
-source ../token
+source ../pypidiff/token
+export GIT_SSH_COMMAND="ssh -i ../pypidiff/diffbot.key"
+AUTHOR="pypidiff <fbonly@schiach.de>"
 
-AUTHOR="pypi diffbot <diff@bot.auto>"
 TODAY=$(date +'%Y%m%d')
 NOW=$(date +'%Y%m%d%H%M')
 
