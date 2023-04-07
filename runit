@@ -1,15 +1,26 @@
-#!/bin/bash
+ #!/bin/bash
 set -e
-python3 fetch.py -s
 AUTHOR="pypi diffbot <foo@bar.com>"
-
+TODAY=$(date +'%Y%m%d')
 NOW=$(date +'%Y%m%d%H%M')
 
 # do not try to hit any limits ..
-find versions  -type f ! -name "*.gz" -and -size +50M -exec gzip {} \;
+if ! gh repo list pypi-diff | grep $TODAY > /dev/null; then
+    echo "Create new repo $TODAY"
+    gh repo create pypi-diff/$TODAY --public
+    sleep 2
+fi
 
-git add versions
-git commit -m "changes: $NOW" -a --author "$AUTHOR"
-git push 
-git tag -a "v$NOW" -m "$NOW"
-git push origin "v$NOW"
+if [ ! -e $TODAY ]; then
+    git clone ssh://git@github.com/pypi-diff/$TODAY
+fi
+
+python3 fetch.py --serial $TODAY/serial --output $TODAY --logfile $TODAY/fetcher.log
+# do not try to hit any limits ..
+find $TODAY  -type f ! -name "*.gz" -and -size +50M -exec gzip {} \;
+PARM="--git-dir $TODAY/.git --work-tree $TODAY"
+git $PARM add .
+git $PARM commit -m "changes: $NOW" -a --author "$AUTHOR"
+git $PARM push
+git $PARM tag -a "v$NOW" -m "$NOW"
+git $PARM push origin "v$NOW"

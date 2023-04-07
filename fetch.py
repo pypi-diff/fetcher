@@ -18,22 +18,6 @@ import requests
 
 jclient = PyPIJSON()
 
-logFormat = (
-    "%(asctime)s %(levelname)s %(name)s %(module)s - %(funcName)s"
-    " [%(threadName)s]: %(message)s"
-)
-logDateFormat = "[%Y-%m-%d %H:%M:%S]"
-logfile = datetime.now().strftime("%Y%d%m")
-handler = [
-    logging.FileHandler(logfile + ".log"),
-]
-logging.basicConfig(
-    level=logging.INFO,
-    format=logFormat,
-    datefmt=logDateFormat,
-    handlers=handler,
-)
-
 log = logging.getLogger()
 
 
@@ -97,8 +81,29 @@ def main():
         required=True,
         help="Read serial from file",
     )
+    parser.add_argument(
+        "-L",
+        "--logfile",
+        required=True,
+        default=datetime.now().strftime("%Y%d%m"),
+        help="Log to file",
+    )
 
     args = parser.parse_args()
+    logFormat = (
+        "%(asctime)s %(levelname)s %(name)s %(module)s - %(funcName)s"
+        " [%(threadName)s]: %(message)s"
+    )
+    logDateFormat = "[%Y-%m-%d %H:%M:%S]"
+    handler = [
+        logging.FileHandler(args.logfile),
+    ]
+    logging.basicConfig(
+        level=logging.INFO,
+        format=logFormat,
+        datefmt=logDateFormat,
+        handlers=handler,
+    )
 
     if args.silent is False:
         log.handlers.append(logging.StreamHandler(stream=sys.stderr))
@@ -149,7 +154,7 @@ def main():
             else:
                 log.info("error")
 
-    serial.write(serialCur)
+    serial.write(serialCur, args.serial)
 
 
 def processPackages(args, jclient, p):
@@ -233,7 +238,7 @@ def processPackages(args, jclient, p):
             "-v",
             f"{pwd}/tmp:{pwd}/tmp:ro",
             "-v",
-            f"{pwd}/versions:{pwd}/versions:rw",
+            f"{pwd}/{args.output}:{pwd}/{args.output}:rw",
             "registry.salsa.debian.org/reproducible-builds/diffoscope",
             "--no-progress",
             diffOn[0],
