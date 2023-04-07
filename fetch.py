@@ -263,7 +263,7 @@ def processPackages(args, jclient, p):
         if args.withhtml:
             cmd.append("--html")
             cmd.append(f"{diffPath}/index.html")
-        if args.withtext:
+        if args.withtxt:
             cmd.append("--text")
             cmd.append(f"{diffPath}/diff.txt")
         log.info(" ".join(cmd))
