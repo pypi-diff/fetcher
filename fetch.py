@@ -88,6 +88,20 @@ def main():
         default=datetime.now().strftime("%Y%d%m"),
         help="Log to file",
     )
+    parser.add_argument(
+        "--withhtml",
+        required=False,
+        default=False,
+        action="store_true",
+        help="Generate diffoscope html output",
+    )
+    parser.add_argument(
+        "--withtxt",
+        required=False,
+        default=False,
+        action="store_true",
+        help="Generate diffoscope text output",
+    )
 
     args = parser.parse_args()
     logFormat = (
@@ -243,13 +257,15 @@ def processPackages(args, jclient, p):
             "--no-progress",
             diffOn[0],
             diffOn[1],
-            "--html",
-            f"{diffPath}/index.html",
-            "--text",
-            f"{diffPath}/diff.txt",
             "--markdown",
             f"{diffPath}/diff.md",
         ]
+        if args.withhtml:
+            cmd.append("--html")
+            cmd.append(f"{diffPath}/index.html")
+        if args.withtext:
+            cmd.append("--text")
+            cmd.append(f"{diffPath}/diff.txt")
         log.info(" ".join(cmd))
         exe = subprocess.run(
             cmd,
