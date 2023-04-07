@@ -1,6 +1,6 @@
  #!/bin/bash
 set -e
-gh auth login --with-token < ../token
+source ../token
 
 AUTHOR="pypi diffbot <foo@bar.com>"
 TODAY=$(date +'%Y%m%d')
