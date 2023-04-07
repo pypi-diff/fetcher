@@ -1,10 +1,10 @@
-def write(curSerial):
-    with open("serial", "w") as fh:
+def write(curSerial, serialFile):
+    with open(serialFile, "w") as fh:
         fh.write(str(curSerial))
 
-def read():
+def read(serialFile):
     try:
-        with open("serial", "r") as fh:
+        with open(serialFile, "r") as fh:
             return fh.read()
     except FileNotFoundError:
         return ""

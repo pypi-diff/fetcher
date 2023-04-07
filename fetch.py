@@ -91,6 +91,12 @@ def main():
         required=False,
         help="Dont log to stderr",
     )
+    parser.add_argument(
+        "-S",
+        "--serial",
+        required=True,
+        help="Read serial from file",
+    )
 
     args = parser.parse_args()
 
@@ -99,7 +105,7 @@ def main():
 
     client = xmlrpc.client.ServerProxy("https://pypi.org/pypi")
 
-    serialLast = serial.read()
+    serialLast = serial.read(args.serial)
     if serialLast == "":
         log.info("No serial file found, fetching last serial via API")
         serialLast = client.changelog_last_serial()
@@ -123,7 +129,7 @@ def main():
 
     if len(changedPackages) == 0:
         log.info("No changed packages found")
-        serial.write(serialCur)
+        serial.write(serialCur, args.serial)
         sys.exit(1)
 
     log.info("Found %s changed packages", len(changedPackages))
