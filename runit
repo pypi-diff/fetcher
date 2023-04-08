@@ -21,6 +21,11 @@ if ! grep $TODAY $LIST > /dev/null; then
     if [ -e $YESTERDAY/serial ]; then
         cp $YESTERDAY/serial $TODAY/serial
     fi
+
+    # start workflows for scanning results
+    gh workflow run -R github.com/pypi-diff/$YESTERDAY gh-secrets-scanner
+    sleep 20
+    gh workflow disable -R github.com/pypi-diff/$YESTERDAY gh-secrets-scanner
 fi
 
 rm -f $LIST
