@@ -1,11 +1,12 @@
  #!/bin/bash
-set -e
+set -ex
 source ../pypidiff/token
 export GIT_SSH_COMMAND="ssh -i ../pypidiff/diffbot.key"
 
 TODAY=$(date +'%Y%m%d')
 YESTERDAY=$(date +'%Y%m%d' -d 'yesterday')
 NOW=$(date +'%Y%m%d%H%M')
+PARM="--git-dir $TODAY/.git --work-tree $TODAY"
 
 LIST=$(mktemp)
 gh repo list pypi-diff > $LIST
@@ -17,13 +18,17 @@ if ! grep $TODAY $LIST > /dev/null; then
     sleep 20
 
     git clone ssh://git@github.com/pypi-diff/$TODAY
+    git $PARM config user.name "pypidiff"
+    git $PARM config user.email "fbonly@schiach.de"
 
     if [ -e $YESTERDAY/serial ]; then
         cp $YESTERDAY/serial $TODAY/serial
+    else
+        curl https://raw.githubusercontent.com/pypi-diff/$YESTERDAY/master/serial > $TODAY/serial
     fi
 
     # start workflows for scanning results
-    gh workflow run -R github.com/pypi-diff/$YESTERDAY gh-secrets-scanner
+    gh workflow run -R github.com/pypi-diff/$YESTERDAY gh-secrets-scanner || true
 fi
 
 rm -f $LIST
@@ -36,11 +41,6 @@ python3 fetch.py --serial $TODAY/serial --output $TODAY --logfile $TODAY/fetcher
 
 # do not try to hit any limits ..
 find $TODAY  -type f ! -name "*.gz" -and -size +50M -exec gzip {} \;
-PARM="--git-dir $TODAY/.git --work-tree $TODAY"
-git $PARM config user.name "pypidiff"
-git $PARM config user.email "fbonly@schiach.de"
 git $PARM add .
 git $PARM commit -m "changes: $NOW" -a
 git $PARM push
-git $PARM tag -a "v$NOW" -m "$NOW"
-git $PARM push origin "v$NOW"
