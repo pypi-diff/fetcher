@@ -4,6 +4,7 @@ source ../pypidiff/token
 export GIT_SSH_COMMAND="ssh -i ../pypidiff/diffbot.key"
 
 TODAY=$(date +'%Y%m%d')
+YESTERDAY=$(date +'%Y%m%d' -d 'yesterday')
 NOW=$(date +'%Y%m%d%H%M')
 
 LIST=$(mktemp)
@@ -11,9 +12,15 @@ gh repo list pypi-diff > $LIST
 
 if ! grep $TODAY $LIST > /dev/null; then
     echo "Create new repo $TODAY"
-    gh repo create pypi-diff/$TODAY --public -p  pypi-diff/template
+    gh repo create pypi-diff/$TODAY --public -p  pypi-diff/template -d "Daily generated diffs for pypi package releases"
     # cloning from template takes some time
     sleep 20
+
+    git clone ssh://git@github.com/pypi-diff/$TODAY
+
+    if [ -e $YESTERDAY/serial ]; then
+        cp $YESTERDAY/serial $TODAY/serial
+    fi
 fi
 
 rm -f $LIST

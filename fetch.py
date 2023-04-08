@@ -102,6 +102,13 @@ def main():
         action="store_true",
         help="Generate diffoscope text output",
     )
+    parser.add_argument(
+        "-x",
+        "--exclude",
+        required=False,
+        default="*.pyd",
+        help="Exclude option passed to diffoscope",
+    )
 
     args = parser.parse_args()
     logFormat = (
@@ -266,6 +273,9 @@ def processPackages(args, jclient, p):
         if args.withtxt:
             cmd.append("--text")
             cmd.append(f"{diffPath}/diff.txt")
+        if args.exclude != "":
+            cmd.append("--exclude")
+            cmd.append(args.exclude)
         log.info(" ".join(cmd))
         exe = subprocess.run(
             cmd,
