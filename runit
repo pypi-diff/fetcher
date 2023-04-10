@@ -1,7 +1,7 @@
  #!/bin/bash
 set -ex
 source ../pypidiff/token
-export GIT_SSH_COMMAND="ssh -i ../pypidiff/diffbot.key"
+export GIT_SSH_COMMAND="ssh -i $HOME/pypidiff/diffbot.key"
 
 TODAY=$(date +'%Y%m%d')
 YESTERDAY=$(date +'%Y%m%d' -d 'yesterday')
@@ -40,7 +40,7 @@ fi
 python3 fetch.py --serial $TODAY/serial --output $TODAY --logfile $TODAY/fetcher.log
 
 # do not try to hit any limits ..
-find $TODAY  -type f ! -name "*.gz" -and -size +50M -exec gzip {} \;
+find $TODAY  -type f -not -path '*/\.git/*' ! -name "*.gz" ! -name "README.md" ! -name "fetcher.log" -and -size +50M -exec gzip {} \;
 git $PARM add .
 git $PARM commit -m "changes: $NOW" -a
 git $PARM push
