@@ -6,7 +6,7 @@ export GIT_SSH_COMMAND="ssh -i ../pypidiff/diffbot.key"
 TODAY=$(date +'%Y%m%d')
 YESTERDAY=$(date +'%Y%m%d' -d 'yesterday')
 NOW=$(date +'%Y%m%d%H%M')
-PARM="--git-dir $TODAY/.git --work-tree $TODAY"
+PARM="-C $TODAY"
 
 LIST=$(mktemp)
 gh repo list pypi-diff > $LIST

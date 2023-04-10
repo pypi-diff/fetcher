@@ -175,6 +175,7 @@ def main():
             else:
                 log.info("error")
 
+    log.info("Store serial: [%s]", serialCur)
     serial.write(serialCur, args.serial)
 
 
