@@ -27,6 +27,12 @@ class pkgInfo:
     version: str
 
 
+@dataclass
+class result:
+    pkg: str
+    state: bool
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="pypi-diff bot",
@@ -170,39 +176,41 @@ def main():
             for p in changedPackages
         }
         for future in as_completed(futures):
-            if future.result() is True:
-                log.info("success")
+            res = future.result()
+            if res.state is True:
+                log.info("End processing [%s]: success", res.pkg)
             else:
-                log.info("error")
+                log.info("End processing [%s] error", res.pkg)
 
     log.info("Store serial: [%s]", serialCur)
     serial.write(serialCur, args.serial)
 
 
 def processPackages(args, jclient, p):
+    log.info("Start processing: %s", p.name)
     current_thread().name = p.name
     try:
         releaseInfo = jclient.get_metadata(p.name)
     except packaging.requirements.InvalidRequirement as e:
         log.error("Unable to get metadata: %s", e)
-        return False
+        return result(p.name, False)
     try:
         old = list(releaseInfo.releases.keys())[-2]
     except IndexError:
         log.warning("Skipping, unable to determine old version")
-        return False
+        return result(p.name, False)
     new = list(releaseInfo.releases.keys())[-1]
     log.info("New version: [%s] Old Version: [%s]", new, old)
 
     if new == old:
         log.warning("Versions are the same, skipping..")
-        return False
+        return result(p.name, False)
 
     diffPath = f"{args.output}/{p.name[0]}/{p.name}/{old}-{new}"
     repPath = f"{diffPath}/index.html"
     if os.path.exists(repPath):
         log.info("report already exists")
-        return True
+        return result(p.name, True)
 
     diffOn = []
     for P in [old, new]:
@@ -220,10 +228,10 @@ def processPackages(args, jclient, p):
             except IndexError:
                 log.warning("unable to get url for both version [%s]", P)
                 log.warning(pprint.pprint(jclient.get_metadata(p.name, P).urls))
-                return False
+                return result(p.name, False)
         except packaging.requirements.InvalidRequirement as err:
             logging.error("Unable to fetch info: %s", err)
-            return False
+            return result(p.name, False)
 
         if filename.endswith(".whl"):
             filename = f"{filename}.zip"
@@ -238,7 +246,7 @@ def processPackages(args, jclient, p):
                     pkgHeader.headers["Content-length"],
                     args.sizelimit,
                 )
-                return False
+                return result(p.name, False)
             pkgData = requests.get(url, allow_redirects=True)
             with open(tf, "wb") as fhf:
                 fhf.write(pkgData.content)
@@ -290,13 +298,13 @@ def processPackages(args, jclient, p):
             shutil.rmtree(diffPath)
         except:
             pass
-        return False
+        return result(p.name, False)
 
     if exe.returncode >= 2:
         log.error("Diffoscope failed: %s", exe.stderr.decode())
-        return False
+        return result(p.name, False)
 
-    return True
+    return result(p.name, True)
 
 
 if __name__ == "__main__":
