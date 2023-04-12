@@ -28,7 +28,9 @@ if ! grep $TODAY $LIST > /dev/null; then
     fi
 
     # start workflows for scanning results
-    gh workflow run -R github.com/pypi-diff/$YESTERDAY gh-secrets-scanner || true
+    for WF in $(gh workflow list -R github.com/pypi-diff/$YESTERDAY | awk '{print $1}'); do
+        gh workflow run -R github.com/pypi-diff/$YESTERDAY $WF || true
+    done
 fi
 
 rm -f $LIST
