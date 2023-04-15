@@ -170,7 +170,7 @@ def main():
         if not os.path.exists(path):
             os.makedirs(path, exist_ok=True)
 
-    with ThreadPoolExecutor(max_workers=args.worker) as executor:
+    with ThreadPoolExecutor(max_workers=int(args.worker)) as executor:
         futures = {
             executor.submit(processPackages, args, jclient, p): p
             for p in changedPackages
