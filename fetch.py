@@ -304,6 +304,14 @@ def processPackages(args, jclient, p):
         log.error("Diffoscope failed: %s", exe.stderr.decode())
         return result(p.name, False)
 
+    try:
+        for rm in [f"{pwd}/{diffOn[0]}", f"{pwd}/{diffOn[1]}"]:
+            if os.path.exists(rm):
+                log.info("Remove: archive file [%s]", rm)
+                os.remove(rm)
+    except:
+        pass
+
     return result(p.name, True)
 
 
