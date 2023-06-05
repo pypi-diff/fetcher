@@ -309,8 +309,8 @@ def processPackages(args, jclient, p):
             if os.path.exists(rm):
                 log.info("Remove: archive file [%s]", rm)
                 os.remove(rm)
-    except:
-        pass
+    except Exception as e:
+        log.warning("Unable to remove archive file: [%s]", e)
 
     return result(p.name, True)
 
