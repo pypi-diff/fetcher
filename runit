@@ -11,7 +11,7 @@ PARM="-C $TODAY"
 LIST=$(mktemp)
 gh repo list pypi-diff > $LIST
 
-if ! grep $TODAY $LIST > /dev/null; then
+if ! grep -q $TODAY $LIST; then
     echo "Create new repo $TODAY"
     gh repo create pypi-diff/$TODAY --public -p  pypi-diff/template -d "Daily generated diffs for pypi package releases"
     # cloning from template takes some time
