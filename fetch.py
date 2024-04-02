@@ -259,8 +259,8 @@ def processPackages(args, jclient, p):
                 return result(p.name, False)
             try:
                 pkgData = requests.get(url, allow_redirects=True, timeout=520)
-                log.warning("Timeout reached during download")
             except requests.exceptions.Timeout:
+                log.warning("Timeout reached during download")
                 return result(p.name, False)
             with open(tf, "wb") as fhf:
                 fhf.write(pkgData.content)
