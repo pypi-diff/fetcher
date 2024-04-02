@@ -1,3 +1,4 @@
+"""Fetch pypi releases and generate diff to last released version"""
 import os
 import sys
 import xmlrpc.client
@@ -12,28 +13,32 @@ from dataclasses import dataclass
 from threading import current_thread
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pypi_json import PyPIJSON
-import serial
 import packaging
 import requests
+import serial
 
 jclient = PyPIJSON()
-
 log = logging.getLogger()
 
 
 @dataclass
 class pkgInfo:
+    """Package info object"""
+
     name: str
     version: str
 
 
 @dataclass
 class result:
+    """Result object returned by processor"""
+
     pkg: str
     state: bool
 
 
 def main():
+    """Main stuff"""
     parser = argparse.ArgumentParser(
         description="pypi-diff bot",
     )
@@ -50,7 +55,7 @@ def main():
         "--packages",
         default="all",
         required=False,
-        help="Process only specific packages, seperated by ','",
+        help="Process only specific packages, separated by ','",
     )
     parser.add_argument(
         "-t",
@@ -187,6 +192,7 @@ def main():
 
 
 def processPackages(args, jclient, p):
+    """Generate diff for released package"""
     log.info("Start processing: %s", p.name)
     current_thread().name = p.name
     try:
@@ -214,7 +220,7 @@ def processPackages(args, jclient, p):
 
     diffOn = []
     for P in [old, new]:
-        # TODO: figure out whats going on in these cases....
+        # TODO: figure out what's going on in these cases....
         try:
             url = jclient.get_metadata(p.name, P).urls[-1]["url"]
             filename = jclient.get_metadata(p.name, P).urls[-1]["filename"]
@@ -239,7 +245,11 @@ def processPackages(args, jclient, p):
         diffOn.append(tf)
         if not os.path.exists(tf):
             log.info("Downloading %s", url)
-            pkgHeader = requests.head(url)
+            try:
+                pkgHeader = requests.head(url, timeout=520)
+            except requests.exceptions.Timeout:
+                log.warning("Timeout reached during header get")
+                return result(p.name, False)
             if int(pkgHeader.headers["Content-length"]) >= args.sizelimit:
                 log.warning(
                     "Skipping package: exceeds size limit %s>=%s",
@@ -247,7 +257,11 @@ def processPackages(args, jclient, p):
                     args.sizelimit,
                 )
                 return result(p.name, False)
-            pkgData = requests.get(url, allow_redirects=True)
+            try:
+                pkgData = requests.get(url, allow_redirects=True, timeout=520)
+                log.warning("Timeout reached during download")
+            except requests.exceptions.Timeout:
+                return result(p.name, False)
             with open(tf, "wb") as fhf:
                 fhf.write(pkgData.content)
 
