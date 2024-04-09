@@ -288,7 +288,7 @@ def processPackages(args, jclient, p):
             diffOn[0],
             diffOn[1],
             "--markdown",
-            f"{diffPath}/diff.md",
+            f"{diffPath}/README.md",
         ]
         if args.withhtml:
             cmd.append("--html")
