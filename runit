@@ -42,7 +42,7 @@ fi
 python3 fetch.py --serial $TODAY/serial --output $TODAY --logfile $TODAY/fetcher.log --worker 10
 
 # do not try to hit any limits ..
-find $TODAY  -type f -not -path '*/\.git/*' ! -name "*.gz" ! -name "README.md" ! -name "fetcher.log" -and -size +50M -exec gzip -f {} \;
+find $TODAY  -type f -not -path '*/\.git/*' ! -name "*.gz" ! -name "fetcher.log" -and -size +50M -exec gzip -f {} \;
 git $PARM fetch
 git $PARM add .
 git $PARM commit -m "changes: $NOW" -a
